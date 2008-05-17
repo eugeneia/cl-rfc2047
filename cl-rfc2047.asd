@@ -1,6 +1,6 @@
 (in-package #:asdf)
 
-(defsystem klatschbase
+(defsystem cl-rfc2047
   :description "Support for rfc-2047 de-/encoding"
   :version "0.1"
   :author "Christian Haselbach"
