@@ -1,0 +1,10 @@
+(in-package #:asdf)
+
+(defsystem klatschbase
+  :description "Support for rfc-2047 de-/encoding"
+  :version "0.1"
+  :author "Christian Haselbach"
+  :license "MIT"
+  :components ((:file "package")
+               (:file "rfc-2047" :depends-on ("package")))
+  :depends-on (:cl-base64 :flexi-streams :cl-ppcre))
