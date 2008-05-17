@@ -89,7 +89,7 @@ Throws an error if the character encoding is not known."
 	   (if (or (>= i slen) (>= len wlen))
 	       i
 	       (let ((c (elt octets i)))
-		 (if (direct-b-p c)
+		 (if (direct-q-p c)
 		     (progn
 		       (princ (code-char c) stream)
 		       (q-enc* (1+ i) (1+ len) octets))
@@ -106,7 +106,7 @@ Throws an error if the character encoding is not known."
 		 (unless (zerop n) (princ *crlfsp* stream))
 		 (format stream "=?~A?~A?" charset encoding)
 		 (let ((i* (q-enc* i 0 octets)))
-f		   (princ "?=" stream)
+		   (princ "?=" stream)
 		   (q-enc i* (1+ n) octets))))))
       (case encoding
 	(:b (b-enc 0 0))
