@@ -6,5 +6,5 @@
   :author "Christian Haselbach"
   :license "MIT"
   :components ((:file "package")
-               (:file "rfc-2047" :depends-on ("package")))
+               (:file "cl-rfc-2047" :depends-on ("package")))
   :depends-on (:cl-base64 :flexi-streams :cl-ppcre))
