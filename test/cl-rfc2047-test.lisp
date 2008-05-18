@@ -39,12 +39,8 @@
 	    "some foo bar bazbla")
 	   (,(cl-rfc2047::string+ "some=?uTf-8?b?Zm9v?=" cl-rfc2047::*crlfsp*
 				  "=?uTf-8?b?YmF6?=bar")
-	     "somefoobazbar"))
+	     "somefoobazbar")
+	   ("foo" "foo"))
      :for result = (decode* encoded)
      :do (ensure (string= decoded result)
 		 :report "expected ~A, got ~A" :arguments (decoded result))))
-
-(run-test)
-(describe (run-test))
-
-(run-tests :suite 'encode-tests)
