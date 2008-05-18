@@ -183,27 +183,3 @@ Throws an error if the character encoding is not known."
 		(unless (= end strlen)
 		  (princ (subseq str end strlen) stream))
 		(return (get-output-stream-string stream)))))
-
-(loop
-   :for x = 0 :then end
-   :for (start end)
-   :on '(4 5 8 12 12 18 20 30)
-   :by #'cddr
-   :if (not (= x start))
-   :collect (list 'a x start)
-   :collect (list 'b start end)
-   :loop-
-
-(decode "=?uTf-8?b?YmF6?=baz")
-
-(decode* (cl-rfc2047::string+ "some=?uTf-8?b?Zm9v?=" cl-rfc2047::*crlfsp*
-				  "=?uTf-8?b?YmF6?=bar"))
-
-
-(ppcre:all-matches-as-strings
- (string+ *decoded-line-regexp*
-	  "(" *crlfsp* *decoded-line-regexp* ")*")
- (cl-rfc2047::string+ "some=?uTf-8?b?Zm9v?=" cl-rfc2047::*crlfsp*
-		      "=?uTf-8?b?YmF6?=bar") )
-
-(ppcre:all-matches-as-strings "ab*c(dab*c)*" "ffabbcdabcggabbbc")
