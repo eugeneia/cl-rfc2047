@@ -2,7 +2,7 @@
 
 (defsystem klatschbase
   :description "Testpackage for cl-rfc2047"
-  :version "0.1"
+  :version "0.2"
   :author "Christian Haselbach"
   :license "MIT"
   :components ((:file "package")
