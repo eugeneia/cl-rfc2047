@@ -162,10 +162,11 @@ Throws an error if the character encoding is not known."
 	    (t (error "unknown encoding ~A" encoding)))))))
 
 (defun decode (str &key (start 0) (end (length str)))
-  (reduce #'string+
-	  (loop
-	     :for word :in (ppcre:split *crlfsp* str :start start :end end)
-	     :collect (decode-one-word word))))
+  (loop
+     :with stream = (make-string-output-stream)
+     :for word :in (ppcre:split *crlfsp* str :start start :end end)
+     :do (princ (decode-one-word word) stream)
+     :finally (return (get-output-stream-string stream))))
 
 (defun decode* (str)
   (loop
