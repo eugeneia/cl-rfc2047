@@ -4,8 +4,11 @@
   (concatenate 'string
 	       (string #\return) (string #\linefeed) (string #\space)))
 
-(defun string+ (s1 s2)
-  (concatenate 'string s1 s2))
+(defparameter *decoded-line-regexp*
+  "=\\?([a-zA-Z0-9-]+)\\?([qQbB])\\?([^ ?]+)\\?=")
+
+(defun string+ (&rest strs)
+  (apply #'concatenate `(string ,@strs)))
 
 (defun char-max-len (charset)
   "returns the maximum number of bytes a character uses in the given
@@ -45,7 +48,7 @@ Throws an error if the charset is unknown."
 Throws an error if the character encoding is not known."
   (make-external-format
    (cond
-     ((string-equal name "UTF-8")      :utf-8)
+     ((string-equal name "UTF-8")       :UTF-8)
      ((string-equal name "ISO-8859-1")  :ISO-8859-1)
      ((string-equal name "ISO-8859-2")  :ISO-8859-2)
      ((string-equal name "ISO-8859-3")  :ISO-8859-3)
@@ -141,7 +144,7 @@ Throws an error if the character encoding is not known."
 
 (defun decode-one-word (str)
   (multiple-value-bind (start end reg-starts reg-ends)
-      (ppcre:scan "=\\?([a-zA-Z0-9-]+)\\?([qQbB])\\?([^ ?]+)\\?=" str)
+      (ppcre:scan *decoded-line-regexp* str)
     (if (null start)
 	(error "Not a valid encoded word ~A" str)
 	(let ((charset  (subseq str (elt reg-starts 0) (elt reg-ends 0)))
@@ -158,8 +161,48 @@ Throws an error if the character encoding is not known."
 	      :external-format (map-to-external-format charset)))
 	    (t (error "unknown encoding ~A" encoding)))))))
 
-(defun decode (str)
+(defun decode (str &key (start 0) (end (length str)))
   (reduce #'string+
 	  (loop
-	     :for word :in (ppcre:split *crlfsp* str)
+	     :for word :in (ppcre:split *crlfsp* str :start start :end end)
 	     :collect (decode-one-word word))))
+
+(defun decode* (str)
+  (loop
+     :with stream = (make-string-output-stream)
+     :for x = 0 :then end
+     :for (start end)
+     :on (ppcre:all-matches (string+ *decoded-line-regexp*
+				     "(" *crlfsp* *decoded-line-regexp* ")*")
+			    str)
+     :by #'cddr
+     :if (not (= x start)) :do (princ (subseq str x start) stream)
+     :do (princ (decode str :start start :end end) stream)
+     :finally (let ((strlen (length str)))
+		(unless (= end strlen)
+		  (princ (subseq str end strlen) stream))
+		(return (get-output-stream-string stream)))))
+
+(loop
+   :for x = 0 :then end
+   :for (start end)
+   :on '(4 5 8 12 12 18 20 30)
+   :by #'cddr
+   :if (not (= x start))
+   :collect (list 'a x start)
+   :collect (list 'b start end)
+   :loop-
+
+(decode "=?uTf-8?b?YmF6?=baz")
+
+(decode* (cl-rfc2047::string+ "some=?uTf-8?b?Zm9v?=" cl-rfc2047::*crlfsp*
+				  "=?uTf-8?b?YmF6?=bar"))
+
+
+(ppcre:all-matches-as-strings
+ (string+ *decoded-line-regexp*
+	  "(" *crlfsp* *decoded-line-regexp* ")*")
+ (cl-rfc2047::string+ "some=?uTf-8?b?Zm9v?=" cl-rfc2047::*crlfsp*
+		      "=?uTf-8?b?YmF6?=bar") )
+
+(ppcre:all-matches-as-strings "ab*c(dab*c)*" "ffabbcdabcggabbbc")
