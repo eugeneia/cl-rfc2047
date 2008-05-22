@@ -1,14 +1,15 @@
 (in-package :cl-rfc2047)
 
-(defparameter *crlfsp*
-  (concatenate 'string
-	       (string #\return) (string #\linefeed) (string #\space)))
+(eval-when (:compile-toplevel)
+  (defconstant +crlfsp+
+    (concatenate 'string
+                 (string #\return) (string #\linefeed) (string #\space))
+    "The character sequence <CRLFSP> which seperates the lines of multi
+line fields.")
 
-(defparameter *decoded-line-regexp*
-  "=\\?([a-zA-Z0-9-]+)\\?([qQbB])\\?([^ ?]+)\\?=")
-
-(defun string+ (&rest strs)
-  (apply #'concatenate `(string ,@strs)))
+  (defconstant +decoded-line-regexp+
+    "=\\?([a-zA-Z0-9-]+)\\?([qQbB])\\?([^ ?]+)\\?="
+    "The regular expression that matches a single encoded word."))
 
 (defun char-max-len (charset)
   "returns the maximum number of bytes a character uses in the given
@@ -85,7 +86,7 @@ Throws an error if the character encoding is not known."
 		      (octets (string-to-octets substr
 						:external-format ext-format))
 		      (b64str (usb8-array-to-base64-string octets)))
-		 (unless (zerop n) (princ *crlfsp* stream))
+		 (unless (zerop n) (princ +crlfsp+ stream))
 		 (format stream "=?~A?~A?~A?=" charset encoding b64str)
 		 (b-enc j (1+ n)))))
 	 (q-enc* (i len octets)
@@ -106,7 +107,7 @@ Throws an error if the character encoding is not known."
 	   (if (>= i slen)
 	       n
 	       (progn
-		 (unless (zerop n) (princ *crlfsp* stream))
+		 (unless (zerop n) (princ +crlfsp+ stream))
 		 (format stream "=?~A?~A?" charset encoding)
 		 (let ((i* (q-enc* i 0 octets)))
 		   (princ "?=" stream)
@@ -121,7 +122,7 @@ Throws an error if the character encoding is not known."
       (get-output-stream-string stream))))
 
 (defun decode-q-to-octets (str)
-  "decodes q encoded strings to octet arrazs"
+  "decodes q encoded strings to octet arrays"
   (let* ((len (length str))
 	 (octets (make-array len :fill-pointer 0 :adjustable t)))
     (labels
@@ -143,8 +144,11 @@ Throws an error if the character encoding is not known."
       octets)))
 
 (defun decode-one-word (str)
+  "Decodes a single encoded word. Encodings can consist of multiple words,
+seperated by <CRLFSP>"
   (multiple-value-bind (start end reg-starts reg-ends)
-      (ppcre:scan *decoded-line-regexp* str)
+      (ppcre:scan +decoded-line-regexp+ str)
+      (declare (ignore end))
     (if (null start)
 	(error "Not a valid encoded word ~A" str)
 	(let ((charset  (subseq str (elt reg-starts 0) (elt reg-ends 0)))
@@ -162,25 +166,30 @@ Throws an error if the character encoding is not known."
 	    (t (error "unknown encoding ~A" encoding)))))))
 
 (defun decode (str &key (start 0) (end (length str)))
+  "Decodes an encoded string and returns the result.
+Start and end can be defined if only a part of the sring shell be decoded."
   (loop
      :with stream = (make-string-output-stream)
-     :for word :in (ppcre:split *crlfsp* str :start start :end end)
+     :for word :in (ppcre:split +crlfsp+ str :start start :end end)
      :do (princ (decode-one-word word) stream)
      :finally (return (get-output-stream-string stream))))
 
-(defun decode* (str)
+(defun decode* (str &key (start 0) (end (length str)))
+  "Decodes a mixed string, i.e., a string that may contain encoded and
+unencoded words."
   (loop
      :with stream = (make-string-output-stream)
      :for x = 0 :then end
-     :for (start end)
-     :on (ppcre:all-matches (string+ *decoded-line-regexp*
-				     "(" *crlfsp* *decoded-line-regexp* ")*")
-			    str)
+     :for (estart eend)
+     :on (ppcre:all-matches #.(concatenate
+                               'string
+                               +decoded-line-regexp+
+                               "(" +crlfsp+ +decoded-line-regexp+ ")*")
+			    str :start start :end end)
      :by #'cddr
-     :unless (= x start) :do (princ (subseq str x start) stream)
-     :do (princ (decode str :start start :end end) stream)
-     :finally (let ((end*   (if (null end) 0 end))
-		    (strlen (length str)))
-		(unless (= end* strlen)
-		  (princ (subseq str end* strlen) stream))
+     :unless (= x estart) :do (princ (subseq str x estart) stream)
+     :do (princ (decode str :start estart :end eend) stream)
+     :finally (let ((eend*  (if (null eend) 0 eend)))
+		(unless (= eend* end)
+		  (princ (subseq str eend* end) stream))
 		(return (get-output-stream-string stream)))))
