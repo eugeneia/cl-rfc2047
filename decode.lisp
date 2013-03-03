@@ -96,7 +96,7 @@
     (loop for start = 0 then (if (crlfsp-p string to (+ to 3))
 				 (+ to 3)
 				 to)
-       for from = (position #\= string :start start)
+       for from = (search "=?" string :start2 start)
        for to = (when from (decoded-word-to string from))
        do (write-string (subseq string start from) out)
        when from
