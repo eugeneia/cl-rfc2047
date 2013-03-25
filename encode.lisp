@@ -54,21 +54,35 @@ destructively."
   (loop for buffer in (b-split string charset)
        collect (usb8-array-to-base64-string buffer)))
 
-(defun char-utf-8 (character)
-  "Return UTF-8 buffer for CHARACTER."
-  (string-to-octets (make-string 1 :initial-element character)
-		    :encoding :utf-8))
+(defun character-ascii (character)
+  "Return ASCII code for CHARACTER or NIL."
+  (let ((buffer (string-to-octets
+		 (make-string 1 :initial-element character)
+		 :encoding :utf-8)))
+    (when (= 1 (length buffer))
+      (unless (> #1=(aref buffer 0) *ascii-boundary*)
+	#1#))))
 
 (defun q-encode-p (character)
   "Predicate to test if CHARACTER needs to be q-encoded."
-  (let ((code (aref (char-utf-8 character) 0)))
-    (or (> code *ascii-boundary*)
+  (let ((code (character-ascii character)))
+    (or (not code)
 	(= code *ascii-newline*)
 	(= code *ascii-return*)
 	(= code *ascii-space*)
 	(= code *ascii-equals*)
 	(= code *ascii-question-mark*)
 	(= code *ascii-underscore*))))
+
+(defun should-encode-p (string)
+  "Predicate to test if STRING should be q encoded."
+  (when (find-if (lambda (char)
+		   (let ((code (character-ascii char)))
+		     (or (not code)
+			 (= code *ascii-newline*)
+			 (= code *ascii-return*))))
+		 string)
+    t))
 
 (defun q-encode-string (string charset)
   "Return q encoded STRING using CHARSET."

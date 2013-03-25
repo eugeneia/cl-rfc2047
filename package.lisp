@@ -5,7 +5,7 @@
   (:use :cl
 	:babel
 	:cl-base64)
-  (:export :q-encode-p
+  (:export :should-encode-p
 	   :encode
 	   :decode
 	   :decode*))
