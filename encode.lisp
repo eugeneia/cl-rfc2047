@@ -63,6 +63,8 @@ destructively."
   "Predicate to test if CHARACTER needs to be q-encoded."
   (let ((code (aref (char-utf-8 character) 0)))
     (or (> code *ascii-boundary*)
+	(= code *ascii-newline*)
+	(= code *ascii-return*)
 	(= code *ascii-space*)
 	(= code *ascii-equals*)
 	(= code *ascii-question-mark*)

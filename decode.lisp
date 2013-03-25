@@ -103,7 +103,11 @@
        do (write-string (decode string :start from :end to) out)
        while (and from to))))
 
-(defun decode* (string &key (start 0) end)
+(defun decode* (string &key (start 0) end (errorp t))
   "Decode mixed STRING (possibly containing encoded as well as unencoded
-words) from START to END."
-  (decode-word* (subseq string start end)))
+words) from START to END, if ERRORP is non nil DECODE* will return the
+string unmodified if an error occurs."
+  (handler-case (decode-word* (subseq string start end))
+    (error (error) (if errorp
+		       (error error)
+		       string))))

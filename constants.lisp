@@ -17,6 +17,12 @@
 (defparameter *ascii-space* 32
   "ASCII space character code.")
 
+(defparameter *ascii-newline* 10
+  "ASCII newline character code.")
+
+(defparameter *ascii-return* 13
+  "ASCII return character code.")
+
 (defparameter *ascii-equals* 61
   "ASCII equals sign character code.")
 
