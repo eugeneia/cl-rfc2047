@@ -8,6 +8,7 @@
 (deftestsuite encode-tests () ())
 
 (defun ensure-encoding (original encoded)
+  "Validate ENCODED against ORIGINAL."
   (loop for word in (cl-ppcre:split cl-rfc2047::*crlfsp* encoded) do
        (ensure (<= (length word) 75)
 	       :report "length (~A) must not be larger than 75"
@@ -17,6 +18,7 @@
 	       :arguments (original (decode* encoded)))))
 
 (defun ensure-encodings (string)
+  "Test encoding STRING using :B and :Q encodings work correctly."
   (ensure-encoding string (encode string :encoding :b))
   (ensure-encoding string (encode string :encoding :q)))
 
@@ -25,6 +27,7 @@
      do (ensure-encodings word)))
 
 (defun random-string (length)
+  "Return a random string of LENGTH."
   (let ((string (make-string length)))
     (loop for i from 0 to (1- length)
        do (setf (aref string i) (code-char (random 1000))))
