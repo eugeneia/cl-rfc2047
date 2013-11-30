@@ -75,7 +75,7 @@ destructively."
 	(= code *ascii-underscore*))))
 
 (defun should-encode-p (string)
-  "Predicate to test if STRING should be q encoded."
+  "Predicate to test if STRING should be encoded."
   (when (find-if (lambda (char)
 		   (let ((code (character-ascii char)))
 		     (or (not code)
