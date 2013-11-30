@@ -7,8 +7,9 @@
 
 (defsystem cl-rfc2047
   :description "Implemntation of RFC2047."
-  :version "0.3"
+  :version "0.4"
   :author "Christian Haselbach"
+  :maintainer "Max Rottenkolber <max@mr.gy>"
   :license "MIT"
   :components ((:file "package")
 	       (:file "constants" :depends-on ("package"))
