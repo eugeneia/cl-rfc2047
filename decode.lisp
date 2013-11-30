@@ -105,8 +105,9 @@
 
 (defun decode* (string &key (start 0) end (errorp t))
   "Decode mixed STRING (possibly containing encoded as well as unencoded
-words) from START to END, if ERRORP is non nil DECODE* will return the
-string unmodified if an error occurs."
+words) from START to END. If an error occurs during decoding and ERRORP
+is NIL, DECODE* will return the string unmodified. ERRORP is bound to {T}
+by default."
   (handler-case (decode-word* (subseq string start end))
     (error (error) (if errorp
 		       (error error)
