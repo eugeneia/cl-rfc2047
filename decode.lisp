@@ -75,7 +75,21 @@
       (:q (q-decode encoded-string charset)))))
 
 (defun decode (string &key (start 0) end)
-  "Decode encoded word in STRING from START to END."
+  "*Arguments and Values:*
+
+   _string_—a _string_.
+
+   _start_, _end_—_bounding index designators_ of _string_. The default
+   for _start_ is 0 and the default for _end_ is {nil}.
+
+   *Description*:
+
+   {decode} returns the decoded word in _string_.
+
+
+   *Exceptional Situations:*
+
+   If {decode} fails an _error condition_ is signaled."
   (decode-word (subseq string start end)))
 
 (defun crlfsp-p (string start end)
@@ -104,10 +118,24 @@
        while (and from to))))
 
 (defun decode* (string &key (start 0) end (errorp t))
-  "Decode mixed STRING (possibly containing encoded as well as unencoded
-words) from START to END. If an error occurs during decoding and ERRORP
-is NIL, DECODE* will return the string unmodified. ERRORP is bound to {T}
-by default."
+  "*Arguments and Values:*
+
+   _string_—a _string_.
+
+   _start_, _end_—_bounding index designators_ of _string_. The default
+   for _start_ is 0 and the default for _end_ is {nil}.
+
+   _error-p_—a _generalized boolean_. The default is _true_.
+
+   *Description*:
+
+   {decode*} returns a decoded copy of _string_ containing encoded as
+   well as unencoded words.
+
+   *Exceptional Situations:*
+
+   If {decode*} fails and _error-p_ is _true_ an _error condition_ is
+   signaled."
   (handler-case (decode-word* (subseq string start end))
     (error (error) (if errorp
 		       (error error)

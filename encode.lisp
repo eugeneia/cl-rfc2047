@@ -75,7 +75,14 @@ destructively."
 	(= code *ascii-underscore*))))
 
 (defun should-encode-p (string)
-  "Predicate to test if STRING should be encoded."
+  "*Arguments and Values:*
+
+   _string_—a _string_.
+
+   *Description*:
+
+   {should-encode-p} returns _true_ if _string_ contains characters that
+   need to be encoded, otherwise, returns _false_."
   (when (find-if (lambda (char)
 		   (let ((code (character-ascii char)))
 		     (or (not code)
@@ -106,7 +113,22 @@ destructively."
 		 'string))
 
 (defun encode (string &key (encoding :b) (charset :utf-8))
-  "Return encoded STRING using ENCODING and CHARSET."
+  "*Arguments and Values:*
+
+   _string_—a _string_.
+
+   _encoding_—a _keyword_.  Can either be {:b} or {:q}. The default is
+   {:b}.
+
+   _charset_—a _keyword_ denoting the character encoding used. The
+   default is {:utf-8}.
+
+   *Description*:
+
+   {encode} returns an encoded copy of _string_. Words will be encoded
+   using _encoding_ and _charset_. If _encoding_ is {:b} then the \"B\"
+   encoding is used. If _encoding_ is {:q} then the \"Q\" encoding is
+   used."
   (encoded-words encoding charset (ecase encoding
 				    (:b (b-encode string charset))
 				    (:q (q-encode string charset)))))
