@@ -97,8 +97,8 @@
   (unless (> end (length string))
     (string= *crlfsp* string :start2 start :end2 end)))
 
-(defun decoded-word-to (string from)
-  "Find end of decoded word in STRING starting at FROM."
+(defun encoded-word-to (string from)
+  "Find end of encoded word in STRING starting at FROM."
   (let* ((?1 (position #\? string :start from))
 	 (?2 (position #\? string :start (1+ ?1)))
 	 (?3 (position #\? string :start (1+ ?2))))
@@ -111,7 +111,7 @@
 				 (+ to 3)
 				 to)
        for from = (search "=?" string :start2 start)
-       for to = (when from (decoded-word-to string from))
+       for to = (when from (encoded-word-to string from))
        do (write-string (subseq string start from) out)
        when from
        do (write-string (decode string :start from :end to) out)
