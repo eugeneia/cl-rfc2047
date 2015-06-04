@@ -46,15 +46,18 @@
 
 (addtest decode*-test
   (loop for (encoded decoded)
-     in `(("=?US-ASCII?Q?foo_bar=20baz?="
+     in '(("=?US-ASCII?Q?foo_bar=20baz?="
 	   "foo bar baz")
 	  ("some =?US-ASCII?Q?foo_bar=20baz?=bla" 
 	   "some foo bar bazbla")
-	  (,(concatenate 'string "some=?uTf-8?b?Zm9v?="
-			 cl-rfc2047::*crlfsp*
-			 "=?uTf-8?b?YmF6?=bar")
-	    "somefoobazbar")
-	  ("foo" "foo"))
+	  ("some=?uTf-8?b?Zm9v?=
+ =?uTf-8?b?YmF6?=bar"
+           "somefoobazbar")
+	  ("foo" "foo")
+          ("=?ISO-8859-1?Q?a?=  
+   
+ 	=?ISO-8859-1?Q?b?="
+           "ab"))
      for result = (decode* encoded)
      do (ensure (string= decoded result)
 		:report "expected ~A, got ~A"

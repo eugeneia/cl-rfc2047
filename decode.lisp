@@ -92,11 +92,6 @@
    If {decode} fails an _error condition_ is signaled."
   (decode-word (subseq string start end)))
 
-(defun crlfsp-p (string start end)
-  "Predicate to test if STRING equals to *CRLFSP* from START to END."
-  (unless (> end (length string))
-    (string= *crlfsp* string :start2 start :end2 end)))
-
 (defun encoded-word-to (string from)
   "Find end of encoded word in STRING starting at FROM."
   (let* ((?1 (position #\? string :start from))
@@ -104,18 +99,31 @@
 	 (?3 (position #\? string :start (1+ ?2))))
     (+ 2 (search "?=" string :start2 (1+ ?3)))))
 
+(defun lwsp-character-p (character)
+  "Predicate to test if CHARACTER is a LWSP-char."
+  (case character ((#\Space #\Tab) t)))
+
 (defun decode-word* (string)
   "Decode mixed STRING."
   (with-output-to-string (out)
-    (loop for start = 0 then (if (crlfsp-p string to (+ to 3))
-				 (+ to 3)
-				 to)
+    (loop for start = 0 then to
        for from = (search "=?" string :start2 start)
        for to = (when from (encoded-word-to string from))
-       do (write-string (subseq string start from) out)
-       when from
-       do (write-string (decode string :start from :end to) out)
+       do
+         (let ((unencoded-prefix (subseq string start from)))
+           (when (find-if-not 'lwsp-character-p unencoded-prefix)
+             (write-string unencoded-prefix out)))
+         (when from
+           (write-string (decode string :start from :end to) out))
        while (and from to))))
+
+(defun unfold-crlfsp (string)
+  "Replace any <CRLF SPACE> in STRING with <SPACE>."
+  (with-output-to-string (out)
+    (loop for start = 0 then (+ crlfsp 2)
+          for crlfsp = (search *crlfsp* string :start2 start)
+       do (write-string string out :start start :end crlfsp)
+       while crlfsp)))
 
 (defun decode* (string &key (start 0) end (errorp t))
   "*Arguments and Values:*
@@ -136,7 +144,7 @@
 
    If {decode*} fails and _error-p_ is _true_ an _error condition_ is
    signaled."
-  (handler-case (decode-word* (subseq string start end))
+  (handler-case (decode-word* (unfold-crlfsp (subseq string start end)))
     (error (error) (if errorp
 		       (error error)
 		       string))))
