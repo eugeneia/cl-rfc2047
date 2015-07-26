@@ -8,4 +8,4 @@ by Christian Haselbach.
 
 **Documentation:**
 
-* [API documentation](http://mr.gy/maintenance/cl-rfc2047/cl-rfc2047-api.html)
+* [API documentation](http://mr.gy/maintenance/cl-rfc2047/api.html)
